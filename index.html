@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Віджет бою</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --bg-color: rgba(0, 0, 0, 0.0);
+      --text-color: #ffffff;
+      --glow-color: #ff6a00; /* Помаранчева підсвітка */
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1rem;
+      justify-content: flex-start;
+      align-items: flex-start;
+      height: 100vh;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    .battle-widget {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.3rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .stat-block {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 1.4rem;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      color: white;
+      min-width: 80px;
+      text-align: left;
+      text-shadow: 0 0 6px var(--glow-color);
+    }
+
+    .stat-label i {
+      color: var(--glow-color);
+      filter: 
+           
+              drop-shadow(0 0 12px var(--glow-color));
+    }
+  </style>
+</head>
+<body>
+  <div class="battle-widget">
+    <div class="stat-block">
+      <div class="stat-label"><i class="fas fa-location-dot"></i></div>
+      <div id="map-name" class="stat-value">-</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-label"><i class="fas fa-car"></i></div>
+      <div id="tank-name" class="stat-value">-</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-label"><i class="fas fa-location-crosshairs"></i></div>
+      <div id="damage-value" class="stat-value">0</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-label"><i class="fas fa-eye"></i></div>
+      <div id="assist-value" class="stat-value">0</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-label"><i class="fas fa-heart"></i></div>
+      <div id="health-value" class="stat-value">0</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-label"><i class="fas fa-skull-crossbones"></i></div>
+      <div id="kills-value" class="stat-value">0</div>
+    </div>
+  </div>
+
+  <script>
+    const MY_PLAYER_ID = 595216257;
+    const damageEl = document.getElementById("damage-value");
+    const assistEl = document.getElementById("assist-value");
+    const healthEl = document.getElementById("health-value");
+    const tankNameEl = document.getElementById("tank-name");
+    const mapNameEl = document.getElementById("map-name");
+    const killsEl = document.getElementById("kills-value");
+
+    const ws = new WebSocket("ws://localhost:38200");
+
+    let totalDamage = 0;
+    let totalAssist = 0;
+    let totalKills = 0;
+
+    function formatNum(num) {
+      return Number(num).toLocaleString('uk-UA');
+    }
+
+    ws.onopen = () => console.log("✅ WebSocket підключено");
+    ws.onerror = (err) => console.error("❌ WebSocket помилка", err);
+    ws.onclose = () => console.warn("🔌 WebSocket відключено");
+
+    ws.addEventListener("message", (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        console.log("📦 Усі вхідні дані:", payload);
+
+        if (!payload || !payload.type || !payload.path) return;
+
+        if (payload.type === 'state') {
+          switch (payload.path) {
+            case 'battle.health':
+              healthEl.textContent = formatNum(payload.value);
+              break;
+            case 'battle.vehicle':
+              if (payload.value?.localizedShortName) {
+                tankNameEl.textContent = payload.value.localizedShortName;
+              }
+              break;
+            case 'battle.arena':
+              if (payload.value?.localizedName) {
+                mapNameEl.textContent = payload.value.localizedName;
+              }
+              break;
+            case 'battle.efficiency.assist':
+              totalAssist = payload.value;
+              assistEl.textContent = formatNum(totalAssist);
+              break;
+            case 'battle.efficiency.kills':
+              totalKills = payload.value;
+              killsEl.textContent = formatNum(totalKills);
+              break;
+            case 'hangar.isInHangar':
+              const inHangar = payload.value;
+              document.body.style.display = inHangar ? 'none' : 'flex';
+
+              if (inHangar) {
+                totalDamage = 0;
+                totalAssist = 0;
+                totalKills = 0;
+                damageEl.textContent = '0';
+                assistEl.textContent = '0';
+                killsEl.textContent = '0';
+                healthEl.textContent = '0';
+                tankNameEl.textContent = '-';
+                mapNameEl.textContent = '-';
+              }
+              break;
+          }
+        }
+
+        if (payload.type === 'trigger') {
+          const data = payload.value;
+          if (payload.path === 'battle.onDamage') {
+            const attacker = data.attacker;
+            if (attacker && attacker.playerId === MY_PLAYER_ID) {
+              console.log("⬇️ Мій урон:", data);
+              totalDamage += data.damage || 0;
+              damageEl.textContent = formatNum(totalDamage);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Помилка при обробці повідомлення", e);
+      }
+    });
+  </script>
+</body>
+</html>
