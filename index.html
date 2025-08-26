@@ -29,12 +29,10 @@
       font-size:1.4rem;min-width:30px;text-align:center;
       display:flex;justify-content:center;align-items:center;
     }
-    /* FontAwesome icons */
     .stat-label i{
-      color:#ffffff; /* сам значок білий */
-      filter: drop-shadow(0 0 8px var(--glow-color)); /* зелений відблиск */
+      color:#ffffff; /* білі іконки */
+      filter: drop-shadow(0 0 8px var(--glow-color)); /* зелена підсвітка */
     }
-    /* PNG icons */
     .stat-label img{
       width:22px;height:22px;
       filter: brightness(0) invert(1) drop-shadow(0 0 8px var(--glow-color));
@@ -48,7 +46,8 @@
       display:flex;flex-direction:column;
       width:100%;
       gap:.25rem;
-      margin-top:1rem; /* більше відступу від кіллів */
+      margin-bottom:.5rem; /* відступ вниз перед картою */
+      align-items:flex-start;
     }
     .hp-nickname{
       font-size:1.2rem;font-weight:bold;
@@ -57,7 +56,7 @@
     }
     .hp-bar{
       position:relative;
-      width:70%; /* зробили коротший (70% від ширини віджета) */
+      width:50%; /* 50% ширини віджета */
       height:10px;
       background:var(--hp-bg);
       border-radius:999px;
@@ -78,6 +77,17 @@
 </head>
 <body>
   <div class="battle-widget">
+
+    <!-- HP + Nickname тепер зверху -->
+    <div class="hp-section">
+      <div id="player-name" class="hp-nickname">SaXon_UA</div>
+      <div id="hp-bar" class="hp-bar" role="progressbar" aria-label="Здоров'я" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+        <div id="hp-fill" class="hp-fill"></div>
+      </div>
+      <div id="health-value" class="hp-text">0 / 0</div>
+    </div>
+
+    <!-- Map -->
     <div class="stat-block">
       <div class="stat-label"><i class="fas fa-location-dot"></i></div>
       <div id="map-name" class="stat-value">-</div>
@@ -102,14 +112,6 @@
       <div id="kills-value" class="stat-value">0</div>
     </div>
 
-    <!-- HP -->
-    <div class="hp-section">
-      <div id="player-name" class="hp-nickname">SaXon_UA</div>
-      <div id="hp-bar" class="hp-bar" role="progressbar" aria-label="Здоров'я" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
-        <div id="hp-fill" class="hp-fill"></div>
-      </div>
-      <div id="health-value" class="hp-text">0 / 0</div>
-    </div>
   </div>
 
   <script>
