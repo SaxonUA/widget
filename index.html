@@ -8,7 +8,7 @@
     :root{
       --bg-color: rgba(0,0,0,0.0);
       --text-color:#fff;
-      --glow-color:#ffffff;
+      --glow-color:#4cba7a; /* зелена підсвітка */
       --hp-bg:rgba(255,255,255,0.15);
       --hp-fill:#ff6a00;
     }
@@ -29,8 +29,16 @@
       font-size:1.4rem;min-width:30px;text-align:center;
       display:flex;justify-content:center;align-items:center;
     }
-    .stat-label i{color:var(--glow-color);filter:drop-shadow(0 0 12px var(--glow-color));}
-    .stat-label img{width:22px;height:22px;filter:drop-shadow(0 0 8px var(--glow-color));}
+    /* FontAwesome icons */
+    .stat-label i{
+      color:#ffffff; /* сам значок білий */
+      filter: drop-shadow(0 0 8px var(--glow-color)); /* зелений відблиск */
+    }
+    /* PNG icons */
+    .stat-label img{
+      width:22px;height:22px;
+      filter: brightness(0) invert(1) drop-shadow(0 0 8px var(--glow-color));
+    }
     .stat-value{
       font-size:1.4rem;color:#fff;min-width:80px;text-align:left;
       text-shadow:0 0 6px var(--glow-color);
@@ -50,7 +58,7 @@
       <div id="map-name" class="stat-value">-</div>
     </div>
 
-    <!-- Damage з PNG і запасним FA-іконкою -->
+    <!-- Damage з PNG -->
     <div class="stat-block">
       <div class="stat-label">
         <img id="damage-icon" src="./damage.png" alt="Damage"
@@ -69,7 +77,7 @@
       <div id="kills-value" class="stat-value">0</div>
     </div>
 
-    <!-- HP внизу -->
+    <!-- HP -->
     <div class="hp-section">
       <div id="player-name" class="hp-nickname">Нікнейм</div>
       <div id="hp-bar" class="hp-bar" role="progressbar" aria-label="Здоров'я" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
