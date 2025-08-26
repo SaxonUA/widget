@@ -44,11 +44,36 @@
       text-shadow:0 0 6px var(--glow-color);
     }
     /* HP */
-    .hp-section{display:flex;flex-direction:column;width:100%;gap:.25rem;margin-top:.5rem;}
-    .hp-nickname{font-size:1.2rem;font-weight:bold;text-shadow:0 0 6px var(--glow-color);margin-bottom:.2rem;}
-    .hp-bar{position:relative;width:100%;height:10px;background:var(--hp-bg);border-radius:999px;overflow:hidden;box-shadow:inset 0 0 8px rgba(0,0,0,.35);}
-    .hp-fill{height:100%;width:0%;background:var(--hp-fill);box-shadow:0 0 12px var(--glow-color);transition:width 200ms linear;}
-    .hp-text{font-size:1.2rem;text-shadow:0 0 6px var(--glow-color);}
+    .hp-section{
+      display:flex;flex-direction:column;
+      width:100%;
+      gap:.25rem;
+      margin-top:1rem; /* більше відступу від кіллів */
+    }
+    .hp-nickname{
+      font-size:1.2rem;font-weight:bold;
+      text-shadow:0 0 6px var(--glow-color);
+      margin-bottom:.2rem;
+    }
+    .hp-bar{
+      position:relative;
+      width:70%; /* зробили коротший (70% від ширини віджета) */
+      height:10px;
+      background:var(--hp-bg);
+      border-radius:999px;
+      overflow:hidden;
+      box-shadow:inset 0 0 8px rgba(0,0,0,.35);
+    }
+    .hp-fill{
+      height:100%;width:0%;
+      background:var(--hp-fill);
+      box-shadow:0 0 12px var(--glow-color);
+      transition:width 200ms linear;
+    }
+    .hp-text{
+      font-size:1.2rem;
+      text-shadow:0 0 6px var(--glow-color);
+    }
   </style>
 </head>
 <body>
