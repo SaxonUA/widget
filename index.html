@@ -9,6 +9,8 @@
       --bg-color: rgba(0, 0, 0, 0.0);
       --text-color: #ffffff;
       --glow-color: #4cba7a; /* Помаранчева підсвітка */
+      --hp-bg: rgba(255,255,255,0.15);
+      --hp-fill: #ff6a00;
     }
 
     body {
@@ -30,6 +32,7 @@
       gap: 0.3rem;
       font-size: 1.2rem;
       font-weight: bold;
+      width: 360px; /* стабільна ширина */
     }
 
     .stat-block {
@@ -42,6 +45,20 @@
       font-size: 1.4rem;
       min-width: 30px;
       text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .stat-label i {
+      color: var(--glow-color);
+      filter: drop-shadow(0 0 12px var(--glow-color));
+    }
+
+    .stat-label img {
+      width: 22px;
+      height: 22px;
+      filter: drop-shadow(0 0 8px var(--glow-color));
     }
 
     .stat-value {
@@ -52,9 +69,43 @@
       text-shadow: 0 0 6px var(--glow-color);
     }
 
-    .stat-label i {
-      color: var(--glow-color);
-      filter: drop-shadow(0 0 12px var(--glow-color));
+    /* HP секція */
+    .hp-section {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 0.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .hp-nickname {
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-shadow: 0 0 6px var(--glow-color);
+      margin-bottom: 0.2rem;
+    }
+
+    .hp-bar {
+      position: relative;
+      width: 100%;
+      height: 10px;
+      background: var(--hp-bg);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.35);
+    }
+
+    .hp-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--hp-fill);
+      box-shadow: 0 0 12px var(--glow-color);
+      transition: width 200ms linear;
+    }
+
+    .hp-text {
+      font-size: 1.2rem;
+      text-shadow: 0 0 6px var(--glow-color);
     }
   </style>
 </head>
@@ -65,7 +116,7 @@
       <div id="map-name" class="stat-value">-</div>
     </div>
     <div class="stat-block">
-      <div class="stat-label"><i class="fas fa-location-crosshairs"></i></div>
+      <div class="stat-label"><img src="icons/damage.png" alt="Damage"></div>
       <div id="damage-value" class="stat-value">0</div>
     </div>
     <div class="stat-block">
@@ -76,6 +127,23 @@
       <div class="stat-label"><i class="fas fa-skull-crossbones"></i></div>
       <div id="kills-value" class="stat-value">0</div>
     </div>
+
+    <!-- HP секція -->
+    <div class="hp-section">
+      <div id="player-name" class="hp-nickname">SaXon_UA</div>
+      <div
+        id="hp-bar"
+        class="hp-bar"
+        role="progressbar"
+        aria-label="Здоров'я"
+        aria-valuemin="0"
+        aria-valuemax="0"
+        aria-valuenow="0"
+      >
+        <div id="hp-fill" class="hp-fill"></div>
+      </div>
+      <div id="health-value" class="hp-text">0 / 0</div>
+    </div>
   </div>
 
   <script>
@@ -84,15 +152,33 @@
     const assistEl = document.getElementById("assist-value");
     const mapNameEl = document.getElementById("map-name");
     const killsEl = document.getElementById("kills-value");
+    const healthEl = document.getElementById("health-value");
+    const hpBar = document.getElementById("hp-bar");
+    const hpFill = document.getElementById("hp-fill");
+    const playerNameEl = document.getElementById("player-name");
 
     const ws = new WebSocket("ws://localhost:38200");
 
     let totalDamage = 0;
     let totalAssist = 0;
     let totalKills = 0;
+    let maxHealth = 0;
+    let currentHealth = 0;
 
     function formatNum(num) {
       return Number(num).toLocaleString('uk-UA');
+    }
+
+    function clamp01(x) {
+      return Math.max(0, Math.min(1, x));
+    }
+
+    function updateHealthDisplay() {
+      healthEl.textContent = `${formatNum(currentHealth)} / ${formatNum(maxHealth)}`;
+      const pct = maxHealth > 0 ? clamp01(currentHealth / maxHealth) : 0;
+      hpFill.style.width = `${pct * 100}%`;
+      hpBar.setAttribute('aria-valuemax', String(maxHealth));
+      hpBar.setAttribute('aria-valuenow', String(currentHealth));
     }
 
     ws.onopen = () => console.log("✅ WebSocket підключено");
@@ -102,8 +188,6 @@
     ws.addEventListener("message", (event) => {
       try {
         const payload = JSON.parse(event.data);
-        console.log("📦 Усі вхідні дані:", payload);
-
         if (!payload || !payload.type || !payload.path) return;
 
         if (payload.type === 'state') {
@@ -114,25 +198,41 @@
               }
               break;
             case 'battle.efficiency.assist':
-              totalAssist = payload.value;
+              totalAssist = payload.value || 0;
               assistEl.textContent = formatNum(totalAssist);
               break;
             case 'battle.efficiency.kills':
-              totalKills = payload.value;
+              totalKills = payload.value || 0;
               killsEl.textContent = formatNum(totalKills);
+              break;
+            case 'battle.maxHealth':
+              maxHealth = Number(payload.value) || 0;
+              updateHealthDisplay();
+              break;
+            case 'battle.health':
+              currentHealth = Number(payload.value) || 0;
+              updateHealthDisplay();
+              break;
+            case 'battle.playerName':
+              if (payload.value) {
+                playerNameEl.textContent = payload.value;
+              }
               break;
             case 'hangar.isInHangar':
               const inHangar = payload.value;
               document.body.style.display = inHangar ? 'none' : 'flex';
-
               if (inHangar) {
                 totalDamage = 0;
                 totalAssist = 0;
                 totalKills = 0;
+                currentHealth = 0;
+                maxHealth = 0;
                 damageEl.textContent = '0';
                 assistEl.textContent = '0';
                 killsEl.textContent = '0';
                 mapNameEl.textContent = '-';
+                playerNameEl.textContent = 'SaXon_UA';
+                updateHealthDisplay();
               }
               break;
           }
@@ -143,8 +243,7 @@
           if (payload.path === 'battle.onDamage') {
             const attacker = data.attacker;
             if (attacker && attacker.playerId === MY_PLAYER_ID) {
-              console.log("⬇️ Мій урон:", data);
-              totalDamage += data.damage || 0;
+              totalDamage += Number(data.damage) || 0;
               damageEl.textContent = formatNum(totalDamage);
             }
           }
