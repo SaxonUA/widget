@@ -1,112 +1,46 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Віджет бою</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    :root {
-      --bg-color: rgba(0, 0, 0, 0.0);
-      --text-color: #ffffff;
-      --glow-color: #4cba7a; /* Помаранчева підсвітка */
-      --hp-bg: rgba(255,255,255,0.15);
-      --hp-fill: #ff6a00;
+    :root{
+      --bg-color: rgba(0,0,0,0.0);
+      --text-color:#fff;
+      --glow-color:#4cba7a;
+      --hp-bg:rgba(255,255,255,0.15);
+      --hp-fill:#ff6a00;
     }
-
-    body {
-      background: var(--bg-color);
-      color: var(--text-color);
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 1rem;
-      justify-content: flex-start;
-      align-items: flex-start;
-      height: 100vh;
-      transition: opacity 0.5s ease-in-out;
+    body{
+      background:var(--bg-color);
+      color:var(--text-color);
+      font-family:Arial,sans-serif;
+      margin:0;padding:1rem;
+      justify-content:flex-start;align-items:flex-start;
+      height:100vh;transition:opacity .5s ease-in-out;
     }
-
-    .battle-widget {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.3rem;
-      font-size: 1.2rem;
-      font-weight: bold;
-      width: 360px; /* стабільна ширина */
+    .battle-widget{
+      display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;
+      font-size:1.2rem;font-weight:bold;width:360px;
     }
-
-    .stat-block {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .stat-block{display:flex;align-items:center;gap:.5rem;}
+    .stat-label{
+      font-size:1.4rem;min-width:30px;text-align:center;
+      display:flex;justify-content:center;align-items:center;
     }
-
-    .stat-label {
-      font-size: 1.4rem;
-      min-width: 30px;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    .stat-label i{color:var(--glow-color);filter:drop-shadow(0 0 12px var(--glow-color));}
+    .stat-label img{width:22px;height:22px;filter:drop-shadow(0 0 8px var(--glow-color));}
+    .stat-value{
+      font-size:1.4rem;color:#fff;min-width:80px;text-align:left;
+      text-shadow:0 0 6px var(--glow-color);
     }
-
-    .stat-label i {
-      color: var(--glow-color);
-      filter: drop-shadow(0 0 12px var(--glow-color));
-    }
-
-    .stat-label img {
-      width: 22px;
-      height: 22px;
-      filter: drop-shadow(0 0 8px var(--glow-color));
-    }
-
-    .stat-value {
-      font-size: 1.4rem;
-      color: white;
-      min-width: 80px;
-      text-align: left;
-      text-shadow: 0 0 6px var(--glow-color);
-    }
-
-    /* HP секція */
-    .hp-section {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      gap: 0.25rem;
-      margin-top: 0.5rem;
-    }
-
-    .hp-nickname {
-      font-size: 1.2rem;
-      font-weight: bold;
-      text-shadow: 0 0 6px var(--glow-color);
-      margin-bottom: 0.2rem;
-    }
-
-    .hp-bar {
-      position: relative;
-      width: 100%;
-      height: 10px;
-      background: var(--hp-bg);
-      border-radius: 999px;
-      overflow: hidden;
-      box-shadow: inset 0 0 8px rgba(0,0,0,0.35);
-    }
-
-    .hp-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--hp-fill);
-      box-shadow: 0 0 12px var(--glow-color);
-      transition: width 200ms linear;
-    }
-
-    .hp-text {
-      font-size: 1.2rem;
-      text-shadow: 0 0 6px var(--glow-color);
-    }
+    /* HP */
+    .hp-section{display:flex;flex-direction:column;width:100%;gap:.25rem;margin-top:.5rem;}
+    .hp-nickname{font-size:1.2rem;font-weight:bold;text-shadow:0 0 6px var(--glow-color);margin-bottom:.2rem;}
+    .hp-bar{position:relative;width:100%;height:10px;background:var(--hp-bg);border-radius:999px;overflow:hidden;box-shadow:inset 0 0 8px rgba(0,0,0,.35);}
+    .hp-fill{height:100%;width:0%;background:var(--hp-fill);box-shadow:0 0 12px var(--glow-color);transition:width 200ms linear;}
+    .hp-text{font-size:1.2rem;text-shadow:0 0 6px var(--glow-color);}
   </style>
 </head>
 <body>
@@ -115,10 +49,17 @@
       <div class="stat-label"><i class="fas fa-location-dot"></i></div>
       <div id="map-name" class="stat-value">-</div>
     </div>
+
+    <!-- Damage з PNG і запасним FA-іконкою -->
     <div class="stat-block">
-      <div class="stat-label"><img src="icons/damage.png" alt="Damage"></div>
+      <div class="stat-label">
+        <img id="damage-icon" src="./damage.png" alt="Damage"
+             onerror="this.onerror=null;this.remove();document.getElementById('damage-fa').style.display='inline-flex';console.warn('damage.png not found');">
+        <i id="damage-fa" class="fas fa-xmark" style="display:none"></i>
+      </div>
       <div id="damage-value" class="stat-value">0</div>
     </div>
+
     <div class="stat-block">
       <div class="stat-label"><i class="fas fa-eye"></i></div>
       <div id="assist-value" class="stat-value">0</div>
@@ -128,18 +69,10 @@
       <div id="kills-value" class="stat-value">0</div>
     </div>
 
-    <!-- HP секція -->
+    <!-- HP внизу -->
     <div class="hp-section">
-      <div id="player-name" class="hp-nickname">SaXon_UA</div>
-      <div
-        id="hp-bar"
-        class="hp-bar"
-        role="progressbar"
-        aria-label="Здоров'я"
-        aria-valuemin="0"
-        aria-valuemax="0"
-        aria-valuenow="0"
-      >
+      <div id="player-name" class="hp-nickname">Нікнейм</div>
+      <div id="hp-bar" class="hp-bar" role="progressbar" aria-label="Здоров'я" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
         <div id="hp-fill" class="hp-fill"></div>
       </div>
       <div id="health-value" class="hp-text">0 / 0</div>
@@ -159,21 +92,13 @@
 
     const ws = new WebSocket("ws://localhost:38200");
 
-    let totalDamage = 0;
-    let totalAssist = 0;
-    let totalKills = 0;
-    let maxHealth = 0;
-    let currentHealth = 0;
+    let totalDamage = 0, totalAssist = 0, totalKills = 0;
+    let maxHealth = 0, currentHealth = 0;
 
-    function formatNum(num) {
-      return Number(num).toLocaleString('uk-UA');
-    }
+    const formatNum = n => Number(n).toLocaleString('uk-UA');
+    const clamp01 = x => Math.max(0, Math.min(1, x));
 
-    function clamp01(x) {
-      return Math.max(0, Math.min(1, x));
-    }
-
-    function updateHealthDisplay() {
+    function updateHealthDisplay(){
       healthEl.textContent = `${formatNum(currentHealth)} / ${formatNum(maxHealth)}`;
       const pct = maxHealth > 0 ? clamp01(currentHealth / maxHealth) : 0;
       hpFill.style.width = `${pct * 100}%`;
@@ -182,20 +107,18 @@
     }
 
     ws.onopen = () => console.log("✅ WebSocket підключено");
-    ws.onerror = (err) => console.error("❌ WebSocket помилка", err);
+    ws.onerror = err => console.error("❌ WebSocket помилка", err);
     ws.onclose = () => console.warn("🔌 WebSocket відключено");
 
     ws.addEventListener("message", (event) => {
-      try {
+      try{
         const payload = JSON.parse(event.data);
-        if (!payload || !payload.type || !payload.path) return;
+        if(!payload || !payload.type || !payload.path) return;
 
-        if (payload.type === 'state') {
-          switch (payload.path) {
+        if(payload.type === 'state'){
+          switch(payload.path){
             case 'battle.arena':
-              if (payload.value?.localizedName) {
-                mapNameEl.textContent = payload.value.localizedName;
-              }
+              if(payload.value?.localizedName) mapNameEl.textContent = payload.value.localizedName;
               break;
             case 'battle.efficiency.assist':
               totalAssist = payload.value || 0;
@@ -214,43 +137,34 @@
               updateHealthDisplay();
               break;
             case 'battle.playerName':
-              if (payload.value) {
-                playerNameEl.textContent = payload.value;
-              }
+              if(payload.value) playerNameEl.textContent = payload.value;
               break;
             case 'hangar.isInHangar':
               const inHangar = payload.value;
               document.body.style.display = inHangar ? 'none' : 'flex';
-              if (inHangar) {
-                totalDamage = 0;
-                totalAssist = 0;
-                totalKills = 0;
-                currentHealth = 0;
-                maxHealth = 0;
+              if(inHangar){
+                totalDamage = totalAssist = totalKills = 0;
+                currentHealth = maxHealth = 0;
                 damageEl.textContent = '0';
                 assistEl.textContent = '0';
                 killsEl.textContent = '0';
                 mapNameEl.textContent = '-';
-                playerNameEl.textContent = 'SaXon_UA';
+                playerNameEl.textContent = 'Нікнейм';
                 updateHealthDisplay();
               }
               break;
           }
         }
 
-        if (payload.type === 'trigger') {
+        if(payload.type === 'trigger' && payload.path === 'battle.onDamage'){
           const data = payload.value;
-          if (payload.path === 'battle.onDamage') {
-            const attacker = data.attacker;
-            if (attacker && attacker.playerId === MY_PLAYER_ID) {
-              totalDamage += Number(data.damage) || 0;
-              damageEl.textContent = formatNum(totalDamage);
-            }
+          const attacker = data?.attacker;
+          if(attacker && attacker.playerId === MY_PLAYER_ID){
+            totalDamage += Number(data.damage) || 0;
+            damageEl.textContent = formatNum(totalDamage);
           }
         }
-      } catch (e) {
-        console.error("Помилка при обробці повідомлення", e);
-      }
+      }catch(e){ console.error("Помилка при обробці повідомлення", e); }
     });
   </script>
 </body>
