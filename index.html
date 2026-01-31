@@ -8,7 +8,7 @@
     :root{
       --bg-color: rgba(0,0,0,0.0);
       --text-color:#fff;
-      --glow-color:#4cba7a; /* зелена підсвітка */
+      --glow-color:#4cba7a;
       --hp-bg:rgba(255,255,255,0.15);
       --hp-fill:#ff6a00;
     }
@@ -18,53 +18,56 @@
       font-family:Arial,sans-serif;
       margin:0;padding:1rem;
       justify-content:flex-start;align-items:flex-start;
-      height:100vh;transition:opacity .5s ease-in-out;
+      height:100vh;
     }
     .battle-widget{
-      display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;
-      font-size:1.2rem;font-weight:bold;width:360px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:.3rem;
+      font-size:1.2rem;
+      font-weight:bold;
+      width:360px;
     }
     .stat-block{display:flex;align-items:center;gap:.5rem;}
     .stat-label{
-      font-size:1.4rem;min-width:30px;text-align:center;
+      font-size:1.4rem;min-width:30px;
       display:flex;justify-content:center;align-items:center;
     }
     .stat-label i{
-      color:#ffffff; /* білі іконки */
-      filter: drop-shadow(0 0 8px var(--glow-color)); /* зелена підсвітка */
+      color:#fff;
+      filter: drop-shadow(0 0 8px var(--glow-color));
     }
     .stat-label img{
       width:22px;height:22px;
       filter: brightness(0) invert(1) drop-shadow(0 0 8px var(--glow-color));
     }
     .stat-value{
-      font-size:1.4rem;color:#fff;min-width:80px;text-align:left;
+      font-size:1.4rem;
+      min-width:80px;
       text-shadow:0 0 6px var(--glow-color);
     }
-    /* HP */
+
     .hp-section{
-      display:flex;flex-direction:column;
-      width:100%;
+      display:flex;
+      flex-direction:column;
       gap:.25rem;
-      margin-bottom:.5rem; /* відступ вниз перед картою */
-      align-items:flex-start;
+      margin-bottom:.5rem;
     }
     .hp-nickname{
-      font-size:1.2rem;font-weight:bold;
+      font-size:1.2rem;
       text-shadow:0 0 6px var(--glow-color);
-      margin-bottom:.2rem;
     }
     .hp-bar{
-      position:relative;
-      width:50%; /* 50% ширини віджета */
+      width:50%;
       height:10px;
       background:var(--hp-bg);
       border-radius:999px;
       overflow:hidden;
-      box-shadow:inset 0 0 8px rgba(0,0,0,.35);
     }
     .hp-fill{
-      height:100%;width:0%;
+      height:100%;
+      width:0%;
       background:var(--hp-fill);
       box-shadow:0 0 12px var(--glow-color);
       transition:width 200ms linear;
@@ -75,132 +78,154 @@
     }
   </style>
 </head>
+
 <body>
-  <div class="battle-widget">
+<div class="battle-widget">
 
-    <!-- HP + Nickname тепер зверху -->
-    <div class="hp-section">
-      <div id="player-name" class="hp-nickname">SaXon_UA</div>
-      <div id="hp-bar" class="hp-bar" role="progressbar" aria-label="Здоров'я" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
-        <div id="hp-fill" class="hp-fill"></div>
-      </div>
-      <div id="health-value" class="hp-text">0 / 0</div>
+  <div class="hp-section">
+    <div id="player-name" class="hp-nickname">SaXon_UA</div>
+    <div id="hp-bar" class="hp-bar">
+      <div id="hp-fill" class="hp-fill"></div>
     </div>
-
-    <!-- Map -->
-    <div class="stat-block">
-      <div class="stat-label"><i class="fas fa-location-dot"></i></div>
-      <div id="map-name" class="stat-value">-</div>
-    </div>
-
-    <!-- Damage з PNG -->
-    <div class="stat-block">
-      <div class="stat-label">
-        <img id="damage-icon" src="./damage.png" alt="Damage"
-             onerror="this.onerror=null;this.remove();document.getElementById('damage-fa').style.display='inline-flex';console.warn('damage.png not found');">
-        <i id="damage-fa" class="fas fa-xmark" style="display:none"></i>
-      </div>
-      <div id="damage-value" class="stat-value">0</div>
-    </div>
-
-    <div class="stat-block">
-      <div class="stat-label"><i class="fas fa-eye"></i></div>
-      <div id="assist-value" class="stat-value">0</div>
-    </div>
-    <div class="stat-block">
-      <div class="stat-label"><i class="fas fa-skull-crossbones"></i></div>
-      <div id="kills-value" class="stat-value">0</div>
-    </div>
-
+    <div id="health-value" class="hp-text">0 / 0</div>
   </div>
 
-  <script>
-    const MY_PLAYER_ID = 594841106;
-    const damageEl = document.getElementById("damage-value");
-    const assistEl = document.getElementById("assist-value");
-    const mapNameEl = document.getElementById("map-name");
-    const killsEl = document.getElementById("kills-value");
-    const healthEl = document.getElementById("health-value");
-    const hpBar = document.getElementById("hp-bar");
-    const hpFill = document.getElementById("hp-fill");
-    const playerNameEl = document.getElementById("player-name");
+  <div class="stat-block">
+    <div class="stat-label"><i class="fas fa-location-dot"></i></div>
+    <div id="map-name" class="stat-value">-</div>
+  </div>
 
-    const ws = new WebSocket("ws://localhost:38200");
+  <div class="stat-block">
+    <div class="stat-label">
+      <img src="./damage.png" alt="Damage"
+        onerror="this.remove();document.getElementById('damage-fa').style.display='inline-flex';">
+      <i id="damage-fa" class="fas fa-xmark" style="display:none"></i>
+    </div>
+    <div id="damage-value" class="stat-value">0</div>
+  </div>
 
-    let totalDamage = 0, totalAssist = 0, totalKills = 0;
-    let maxHealth = 0, currentHealth = 0;
+  <div class="stat-block">
+    <div class="stat-label"><i class="fas fa-eye"></i></div>
+    <div id="assist-value" class="stat-value">0</div>
+  </div>
 
-    const formatNum = n => Number(n).toLocaleString('uk-UA');
-    const clamp01 = x => Math.max(0, Math.min(1, x));
+  <div class="stat-block">
+    <div class="stat-label"><i class="fas fa-skull-crossbones"></i></div>
+    <div id="kills-value" class="stat-value">0</div>
+  </div>
 
-    function updateHealthDisplay(){
-      healthEl.textContent = `${formatNum(currentHealth)} / ${formatNum(maxHealth)}`;
-      const pct = maxHealth > 0 ? clamp01(currentHealth / maxHealth) : 0;
-      hpFill.style.width = `${pct * 100}%`;
-      hpBar.setAttribute('aria-valuemax', String(maxHealth));
-      hpBar.setAttribute('aria-valuenow', String(currentHealth));
+</div>
+
+<script>
+  const MY_PLAYER_ID = 594841106;
+  const WS_URL = "ws://localhost:38200";
+
+  const damageEl = document.getElementById("damage-value");
+  const assistEl = document.getElementById("assist-value");
+  const killsEl  = document.getElementById("kills-value");
+  const mapEl    = document.getElementById("map-name");
+  const hpText   = document.getElementById("health-value");
+  const hpFill   = document.getElementById("hp-fill");
+  const playerEl = document.getElementById("player-name");
+
+  let ws;
+  let reconnectTimer;
+
+  let totalDamage = 0;
+  let totalAssist = 0;
+  let totalKills  = 0;
+  let maxHP = 0;
+  let curHP = 0;
+
+  const fmt = n => Number(n).toLocaleString("uk-UA");
+  const clamp = v => Math.max(0, Math.min(1, v));
+
+  function updateHP(){
+    if (!maxHP) return;
+    hpText.textContent = `${fmt(curHP)} / ${fmt(maxHP)}`;
+    hpFill.style.width = `${clamp(curHP / maxHP) * 100}%`;
+  }
+
+  function resetAll(){
+    totalDamage = totalAssist = totalKills = 0;
+    maxHP = curHP = 0;
+    damageEl.textContent = assistEl.textContent = killsEl.textContent = "0";
+    mapEl.textContent = "-";
+    playerEl.textContent = "SaXon_UA";
+    updateHP();
+  }
+
+  function connectWS(){
+    console.log("🔄 WS connect...");
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      console.log("✅ WS connected");
+      clearTimeout(reconnectTimer);
+    };
+
+    ws.onclose = () => {
+      console.warn("🔌 WS closed → retry");
+      reconnectTimer = setTimeout(connectWS, 1000);
+    };
+
+    ws.onerror = () => ws.close();
+
+    ws.onmessage = handleMessage;
+  }
+
+  function handleMessage(e){
+    try{
+      const p = JSON.parse(e.data);
+      if (!p?.type || !p.path) return;
+
+      if (p.type === "state"){
+        switch(p.path){
+          case "battle.arena":
+            if (p.value?.localizedName) mapEl.textContent = p.value.localizedName;
+            break;
+
+          case "battle.efficiency.assist":
+            assistEl.textContent = fmt(totalAssist = p.value || 0);
+            break;
+
+          case "battle.efficiency.kills":
+            killsEl.textContent = fmt(totalKills = p.value || 0);
+            break;
+
+          case "battle.maxHealth":
+            maxHP = Number(p.value) || 0;
+            updateHP();
+            break;
+
+          case "battle.health":
+            curHP = Number(p.value) || 0;
+            updateHP();
+            break;
+
+          case "battle.playerName":
+            if (p.value) playerEl.textContent = p.value;
+            break;
+
+          case "hangar.isInHangar":
+            document.body.style.display = p.value ? "none" : "flex";
+            if (p.value) resetAll();
+            break;
+        }
+      }
+
+      if (p.type === "trigger" && p.path === "battle.onDamage"){
+        if (p.value?.attacker?.playerId === MY_PLAYER_ID){
+          totalDamage += Number(p.value.damage) || 0;
+          damageEl.textContent = fmt(totalDamage);
+        }
+      }
+    }catch(err){
+      console.error("❗ WS parse error", err);
     }
+  }
 
-    ws.onopen = () => console.log("✅ WebSocket підключено");
-    ws.onerror = err => console.error("❌ WebSocket помилка", err);
-    ws.onclose = () => console.warn("🔌 WebSocket відключено");
-
-    ws.addEventListener("message", (event) => {
-      try{
-        const payload = JSON.parse(event.data);
-        if(!payload || !payload.type || !payload.path) return;
-
-        if(payload.type === 'state'){
-          switch(payload.path){
-            case 'battle.arena':
-              if(payload.value?.localizedName) mapNameEl.textContent = payload.value.localizedName;
-              break;
-            case 'battle.efficiency.assist':
-              totalAssist = payload.value || 0;
-              assistEl.textContent = formatNum(totalAssist);
-              break;
-            case 'battle.efficiency.kills':
-              totalKills = payload.value || 0;
-              killsEl.textContent = formatNum(totalKills);
-              break;
-            case 'battle.maxHealth':
-              maxHealth = Number(payload.value) || 0;
-              updateHealthDisplay();
-              break;
-            case 'battle.health':
-              currentHealth = Number(payload.value) || 0;
-              updateHealthDisplay();
-              break;
-            case 'battle.playerName':
-              if(payload.value) playerNameEl.textContent = payload.value;
-              break;
-            case 'hangar.isInHangar':
-              const inHangar = payload.value;
-              document.body.style.display = inHangar ? 'none' : 'flex';
-              if(inHangar){
-                totalDamage = totalAssist = totalKills = 0;
-                currentHealth = maxHealth = 0;
-                damageEl.textContent = '0';
-                assistEl.textContent = '0';
-                killsEl.textContent = '0';
-                mapNameEl.textContent = '-';
-                playerNameEl.textContent = 'SaXon_UA';
-                updateHealthDisplay();
-              }
-              break;
-          }
-        }
-
-        if(payload.type === 'trigger' && payload.path === 'battle.onDamage'){
-          const data = payload.value;
-          const attacker = data?.attacker;
-          if(attacker && attacker.playerId === MY_PLAYER_ID){
-            totalDamage += Number(data.damage) || 0;
-            damageEl.textContent = formatNum(totalDamage);
-          }
-        }
-      }catch(e){ console.error("Помилка при обробці повідомлення", e); }
-    });
-  </script>
+  connectWS();
+</script>
 </body>
 </html>
