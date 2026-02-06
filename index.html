@@ -3,130 +3,197 @@
 <head>
   <meta charset="UTF-8" />
   <title>Віджет бою</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- читабельний шрифт (цифри виглядають рівно) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Russo+One&display=swap" rel="stylesheet">
+
   <style>
     :root{
       --bg-color: rgba(0,0,0,0.0);
-      --text-color:#fff;
+      --text-color:#ffffff;
+      --muted: rgba(255,255,255,0.85);
       --glow-color:#4cba7a;
-      --hp-bg:rgba(255,255,255,0.15);
-      --hp-fill:#ff6a00;
+
+      --hp-bg: rgba(0,0,0,0.35);
+      --hp-border: rgba(255,255,255,0.18);
+      --hp-fill: #20c76a;
+
+      --widget-width: 360px;
     }
+
     body{
+      margin:0;
+      padding:10px;
+      height:100vh;
       background:var(--bg-color);
       color:var(--text-color);
-      font-family:Arial,sans-serif;
-      margin:0;padding:1rem;
-      justify-content:flex-start;align-items:flex-start;
-      height:100vh;
+      display:flex;
+      justify-content:flex-start;
+      align-items:flex-start;
     }
+
     .battle-widget{
+      width: var(--widget-width);
       display:flex;
       flex-direction:column;
       align-items:flex-start;
-      gap:.3rem;
-      font-size:1.2rem;
-      font-weight:bold;
-      width:360px;
-    }
-    .stat-block{display:flex;align-items:center;gap:.5rem;}
-    .stat-label{
-      font-size:1.4rem;min-width:30px;
-      display:flex;justify-content:center;align-items:center;
-    }
-    .stat-label i{
-      color:#fff;
-      filter: drop-shadow(0 0 8px var(--glow-color));
-    }
-    .stat-label img{
-      width:22px;height:22px;
-      filter: brightness(0) invert(1) drop-shadow(0 0 8px var(--glow-color));
-    }
-    .stat-value{
-      font-size:1.4rem;
-      min-width:80px;
-      text-shadow:0 0 6px var(--glow-color);
+      gap:.5rem;
+      font-family: "Montserrat", Arial, sans-serif;
+      font-weight: 800;
     }
 
+    /* ===== HP ===== */
     .hp-section{
+      width: 100%;
       display:flex;
       flex-direction:column;
-      gap:.25rem;
-      margin-bottom:.5rem;
+      gap:.3rem;
+      margin-bottom: .05rem;
     }
-    .hp-nickname{
-      font-size:1.2rem;
-      text-shadow:0 0 6px var(--glow-color);
-    }
+
     .hp-bar{
-      width:50%;
-      height:10px;
-      background:var(--hp-bg);
-      border-radius:999px;
-      overflow:hidden;
+      width: 100%;
+      height: 16px;
+      position: relative;
+      background: var(--hp-bg);
+      border: 1px solid var(--hp-border);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.35);
     }
+
     .hp-fill{
-      height:100%;
-      width:0%;
-      background:var(--hp-fill);
-      box-shadow:0 0 12px var(--glow-color);
-      transition:width 200ms linear;
+      height: 100%;
+      width: 0%;
+      background: var(--hp-fill);
+      box-shadow: 0 0 12px var(--glow-color);
+      transition: width 200ms linear;
     }
+
+    /* ХП під прогресбаром по центру + жирні цифри */
     .hp-text{
-      font-size:1.2rem;
-      text-shadow:0 0 6px var(--glow-color);
+      width: 100%;
+      text-align:center;             /* ✅ по центру */
+      font-family: "Russo One", "Montserrat", Arial, sans-serif; /* ✅ цифри читаються */
+      font-size: 14px;
+      letter-spacing: .4px;
+      color: var(--muted);
+      text-shadow:
+        0 0 6px rgba(0,0,0,0.95),
+        0 0 10px rgba(0,0,0,0.65),
+        0 0 6px var(--glow-color);
+      user-select:none;
+      white-space:nowrap;
+
+      /* щоб цифри не "стрибали" по ширині */
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+
+    /* ===== Stats ===== */
+    .stat-block{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+    }
+
+    .stat-label{
+      width: 28px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      opacity: .95;
+    }
+
+    .stat-label svg{
+      width: 18px;
+      height: 18px;
+      fill: #fff;
+      filter: drop-shadow(0 0 8px var(--glow-color));
+      display:block;
+    }
+
+    .stat-value{
+      font-family: "Russo One", "Montserrat", Arial, sans-serif; /* ✅ цифри */
+      font-size: 18px;
+      min-width: 90px;
+      letter-spacing: .2px;
+      text-shadow: 0 0 6px rgba(0,0,0,0.9), 0 0 6px var(--glow-color);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
     }
   </style>
 </head>
 
 <body>
-<div class="battle-widget">
+  <div class="battle-widget">
 
-  <div class="hp-section">
-    <div id="player-name" class="hp-nickname">SaXon_UA</div>
-    <div id="hp-bar" class="hp-bar">
-      <div id="hp-fill" class="hp-fill"></div>
+    <div class="hp-section">
+      <div class="hp-bar">
+        <div id="hp-fill" class="hp-fill"></div>
+      </div>
+      <div id="health-value" class="hp-text">0 / 0</div>
     </div>
-    <div id="health-value" class="hp-text">0 / 0</div>
-  </div>
 
-  <div class="stat-block">
-    <div class="stat-label"><i class="fas fa-location-dot"></i></div>
-    <div id="map-name" class="stat-value">-</div>
-  </div>
-
-  <div class="stat-block">
-    <div class="stat-label">
-      <img src="./damage.png" alt="Damage"
-        onerror="this.remove();document.getElementById('damage-fa').style.display='inline-flex';">
-      <i id="damage-fa" class="fas fa-xmark" style="display:none"></i>
+    <!-- НАЗВА МАПИ -->
+    <div class="stat-block">
+      <div class="stat-label" aria-hidden="true">
+        <!-- pin -->
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 6 12.6 6.3 12.9.4.5 1.1.5 1.5 0C13 21.6 19 14.2 19 9c0-3.9-3.1-7-7-7zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+        </svg>
+      </div>
+      <div id="map-name" class="stat-value">-</div>
     </div>
-    <div id="damage-value" class="stat-value">0</div>
-  </div>
 
-  <div class="stat-block">
-    <div class="stat-label"><i class="fas fa-eye"></i></div>
-    <div id="assist-value" class="stat-value">0</div>
-  </div>
+    <!-- 1) Приціл = дамаг -->
+    <div class="stat-block">
+      <div class="stat-label" aria-hidden="true">
+        <!-- crosshair -->
+        <svg viewBox="0 0 24 24">
+          <path d="M11 2h2v3a7.02 7.02 0 0 1 6 6h3v2h-3a7.02 7.02 0 0 1-6 6v3h-2v-3a7.02 7.02 0 0 1-6-6H2v-2h3a7.02 7.02 0 0 1 6-6V2zm1 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/>
+        </svg>
+      </div>
+      <div id="damage-value" class="stat-value">0</div>
+    </div>
 
-  <div class="stat-block">
-    <div class="stat-label"><i class="fas fa-skull-crossbones"></i></div>
-    <div id="kills-value" class="stat-value">0</div>
-  </div>
+    <!-- 2) Око = насвіт -->
+    <div class="stat-block">
+      <div class="stat-label" aria-hidden="true">
+        <!-- eye -->
+        <svg viewBox="0 0 24 24">
+          <path d="M12 5c5.5 0 9.7 4.1 11 7-1.3 2.9-5.5 7-11 7S2.3 15.9 1 12c1.3-2.9 5.5-7 11-7zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2.2a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6z"/>
+        </svg>
+      </div>
+      <div id="assist-value" class="stat-value">0</div>
+    </div>
 
-</div>
+    <!-- 3) Фраги -->
+    <div class="stat-block">
+      <div class="stat-label" aria-hidden="true">
+        <!-- skull -->
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2c-4.4 0-8 3.3-8 7.4 0 2.6 1.5 5 4 6.4V20c0 1.1.9 2 2 2h1v-3h2v3h1c1.1 0 2-.9 2-2v-4.2c2.5-1.4 4-3.8 4-6.4C20 5.3 16.4 2 12 2zm-3 9a1.2 1.2 0 1 1 0-2.4A1.2 1.2 0 0 1 9 11zm6 0a1.2 1.2 0 1 1 0-2.4A1.2 1.2 0 0 1 15 11zm-4 4h2v2h-2v-2z"/>
+        </svg>
+      </div>
+      <div id="kills-value" class="stat-value">0</div>
+    </div>
+
+  </div>
 
 <script>
   const MY_PLAYER_ID = 594841106;
   const WS_URL = "ws://localhost:38200";
 
+  const mapEl    = document.getElementById("map-name");
   const damageEl = document.getElementById("damage-value");
   const assistEl = document.getElementById("assist-value");
   const killsEl  = document.getElementById("kills-value");
-  const mapEl    = document.getElementById("map-name");
-  const hpText   = document.getElementById("health-value");
-  const hpFill   = document.getElementById("hp-fill");
-  const playerEl = document.getElementById("player-name");
+
+  const hpText = document.getElementById("health-value");
+  const hpFill = document.getElementById("hp-fill");
 
   let ws;
   let reconnectTimer;
@@ -134,6 +201,7 @@
   let totalDamage = 0;
   let totalAssist = 0;
   let totalKills  = 0;
+
   let maxHP = 0;
   let curHP = 0;
 
@@ -141,36 +209,34 @@
   const clamp = v => Math.max(0, Math.min(1, v));
 
   function updateHP(){
-    if (!maxHP) return;
     hpText.textContent = `${fmt(curHP)} / ${fmt(maxHP)}`;
+    if (!maxHP){
+      hpFill.style.width = "0%";
+      return;
+    }
     hpFill.style.width = `${clamp(curHP / maxHP) * 100}%`;
   }
 
   function resetAll(){
-    totalDamage = totalAssist = totalKills = 0;
-    maxHP = curHP = 0;
-    damageEl.textContent = assistEl.textContent = killsEl.textContent = "0";
+    totalDamage = 0;
+    totalAssist = 0;
+    totalKills  = 0;
+    maxHP = 0;
+    curHP = 0;
+
     mapEl.textContent = "-";
-    playerEl.textContent = "SaXon_UA";
+    damageEl.textContent = "0";
+    assistEl.textContent = "0";
+    killsEl.textContent  = "0";
     updateHP();
   }
 
   function connectWS(){
-    console.log("🔄 WS connect...");
     ws = new WebSocket(WS_URL);
 
-    ws.onopen = () => {
-      console.log("✅ WS connected");
-      clearTimeout(reconnectTimer);
-    };
-
-    ws.onclose = () => {
-      console.warn("🔌 WS closed → retry");
-      reconnectTimer = setTimeout(connectWS, 1000);
-    };
-
+    ws.onopen = () => clearTimeout(reconnectTimer);
+    ws.onclose = () => reconnectTimer = setTimeout(connectWS, 1000);
     ws.onerror = () => ws.close();
-
     ws.onmessage = handleMessage;
   }
 
@@ -186,11 +252,13 @@
             break;
 
           case "battle.efficiency.assist":
-            assistEl.textContent = fmt(totalAssist = p.value || 0);
+            totalAssist = Number(p.value) || 0;
+            assistEl.textContent = fmt(totalAssist);
             break;
 
           case "battle.efficiency.kills":
-            killsEl.textContent = fmt(totalKills = p.value || 0);
+            totalKills = Number(p.value) || 0;
+            killsEl.textContent = fmt(totalKills);
             break;
 
           case "battle.maxHealth":
@@ -201,10 +269,6 @@
           case "battle.health":
             curHP = Number(p.value) || 0;
             updateHP();
-            break;
-
-          case "battle.playerName":
-            if (p.value) playerEl.textContent = p.value;
             break;
 
           case "hangar.isInHangar":
@@ -221,10 +285,11 @@
         }
       }
     }catch(err){
-      console.error("❗ WS parse error", err);
+      console.error(err);
     }
   }
 
+  updateHP();
   connectWS();
 </script>
 </body>
