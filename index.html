@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <title>Віджет бою</title>
 
+  <!-- максимально схожий на WoT-стиль (конденсований, “ігровий” вигляд) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Russo+One&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
 
   <style>
     :root{
       --bg-color: rgba(0,0,0,0.0);
       --text-color:#ffffff;
-      --glow-color:#4cba7a;
 
       --hp-bg: rgba(0,0,0,0.35);
       --hp-border: rgba(255,255,255,0.18);
@@ -20,8 +20,9 @@
 
       --widget-width: 360px;
 
-      /* однакова тінь для всього */
-      --shadow: 0 0 6px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.65), 0 0 6px var(--glow-color);
+      /* тонка окантовка */
+      --stroke: rgba(0,0,0,0.90);
+      --stroke-w: 1px;
     }
 
     body{
@@ -33,6 +34,7 @@
       display:flex;
       justify-content:flex-start;
       align-items:flex-start;
+      font-family: "Roboto Condensed", Arial, sans-serif;
     }
 
     .battle-widget{
@@ -40,51 +42,53 @@
       display:flex;
       flex-direction:column;
       align-items:flex-start;
-      gap:.5rem;
-      font-family: "Montserrat", Arial, sans-serif;
-      font-weight: 800;
+      gap:.55rem;
+      font-weight: 700;
     }
 
-    /* ===== HP ===== */
+    /* ===== HP (зліва, текст поверх) ===== */
     .hp-section{
       width: 100%;
-      display:flex;
-      flex-direction:column;
-      gap:.3rem;
       margin-bottom: .05rem;
     }
 
     .hp-bar{
-      width: 100%;
-      height: 16px;
+      width: 50%;                  /* 50% менше */
+      height: 18px;
       position: relative;
       background: var(--hp-bg);
       border: 1px solid var(--hp-border);
       border-radius: 999px;
       overflow: hidden;
       box-shadow: 0 0 10px rgba(0,0,0,0.35);
+      margin: 0;                   /* ✅ вліво */
     }
 
     .hp-fill{
       height: 100%;
       width: 0%;
       background: var(--hp-fill);
-      box-shadow: 0 0 12px var(--glow-color);
       transition: width 200ms linear;
     }
 
-    .hp-text{
-      width: 100%;
-      text-align:center;
-      font-family: "Russo One", "Montserrat", Arial, sans-serif;
-      font-size: 14px;
-      letter-spacing: .4px;
-      color: rgba(255,255,255,0.9);
-      text-shadow: var(--shadow);
+    .hp-overlay{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 16px;             /* трошки крупніше як на прикладі */
+      letter-spacing: .3px;
+      color: rgba(255,255,255,0.98);
       user-select:none;
       white-space:nowrap;
+
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1;
+
+      -webkit-text-stroke: var(--stroke-w) var(--stroke);
+      paint-order: stroke fill;
+      pointer-events:none;
     }
 
     /* ===== Stats ===== */
@@ -102,26 +106,30 @@
       opacity: .98;
     }
 
-    /* ✅ тінь/світіння як у чисел */
     .stat-label svg{
       width: 18px;
       height: 18px;
-      fill: #fff;
       display:block;
-      filter:
-        drop-shadow(0 0 6px rgba(0,0,0,0.95))
-        drop-shadow(0 0 10px rgba(0,0,0,0.65))
-        drop-shadow(0 0 6px var(--glow-color));
+
+      fill: #fff;
+      stroke: var(--stroke);
+      stroke-width: 1.3;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      paint-order: stroke fill;
     }
 
     .stat-value{
-      font-family: "Russo One", "Montserrat", Arial, sans-serif;
-      font-size: 18px;
+      font-size: 20px;             /* як “ігрові” цифри */
       min-width: 90px;
       letter-spacing: .2px;
-      text-shadow: var(--shadow);
+      color: rgba(255,255,255,0.98);
+
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1;
+
+      -webkit-text-stroke: var(--stroke-w) var(--stroke);
+      paint-order: stroke fill;
     }
   </style>
 </head>
@@ -132,8 +140,8 @@
     <div class="hp-section">
       <div class="hp-bar">
         <div id="hp-fill" class="hp-fill"></div>
+        <div id="hp-overlay" class="hp-overlay">0 / 0</div>
       </div>
-      <div id="health-value" class="hp-text">0 / 0</div>
     </div>
 
     <!-- Мапа -->
@@ -187,8 +195,8 @@
   const assistEl = document.getElementById("assist-value");
   const killsEl  = document.getElementById("kills-value");
 
-  const hpText = document.getElementById("health-value");
-  const hpFill = document.getElementById("hp-fill");
+  const hpFill    = document.getElementById("hp-fill");
+  const hpOverlay = document.getElementById("hp-overlay");
 
   let ws;
   let reconnectTimer;
@@ -204,7 +212,7 @@
   const clamp = v => Math.max(0, Math.min(1, v));
 
   function updateHP(){
-    hpText.textContent = `${fmt(curHP)} / ${fmt(maxHP)}`;
+    hpOverlay.textContent = `${fmt(curHP)} / ${fmt(maxHP)}`;
     if (!maxHP){
       hpFill.style.width = "0%";
       return;
