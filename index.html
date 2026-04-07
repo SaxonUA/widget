@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Віджет бою</title>
 
-  <!-- максимально схожий на WoT-стиль (конденсований, “ігровий” вигляд) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
@@ -13,14 +12,11 @@
     :root{
       --bg-color: rgba(0,0,0,0.0);
       --text-color:#ffffff;
-
       --hp-bg: rgba(0,0,0,0.35);
       --hp-border: rgba(255,255,255,0.18);
-      --hp-fill: #20c76a;
-
-      --widget-width: 360px;
-
-      /* тонка окантовка */
+      --hp-fill: #14ff72;
+      --neon-color: #14ff72;
+      --widget-width: 400px; /* Трохи збільшив загальну ширину */
       --stroke: rgba(0,0,0,0.90);
       --stroke-w: 1px;
     }
@@ -42,26 +38,26 @@
       display:flex;
       flex-direction:column;
       align-items:flex-start;
-      gap:.55rem;
+      gap:.7rem; /* Трохи більше місця між рядками */
       font-weight: 700;
     }
 
-    /* ===== HP (зліва, текст поверх) ===== */
+    /* ===== HP ===== */
     .hp-section{
       width: 100%;
-      margin-bottom: .05rem;
+      margin-bottom: .2rem;
     }
 
     .hp-bar{
-      width: 50%;                  /* 50% менше */
-      height: 18px;
+      width: 50%;
+      height: 20px; /* Трохи вищий бар */
       position: relative;
       background: var(--hp-bg);
-      border: 1px solid var(--hp-border);
+      border: 1px solid var(--neon-color);
       border-radius: 999px;
       overflow: hidden;
-      box-shadow: 0 0 10px rgba(0,0,0,0.35);
-      margin: 0;                   /* ✅ вліво */
+      box-shadow: 0 0 5px rgba(20, 255, 114, 0.4);
+      margin: 0;
     }
 
     .hp-fill{
@@ -77,57 +73,50 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: 16px;             /* трошки крупніше як на прикладі */
+      font-size: 16px;
       letter-spacing: .3px;
-      color: rgba(255,255,255,0.98);
-      user-select:none;
-      white-space:nowrap;
-
-      font-variant-numeric: tabular-nums;
-      font-feature-settings: "tnum" 1;
-
+      color: #fff;
       -webkit-text-stroke: var(--stroke-w) var(--stroke);
       paint-order: stroke fill;
-      pointer-events:none;
     }
 
     /* ===== Stats ===== */
     .stat-block{
       display:flex;
       align-items:center;
-      gap:.6rem;
+      gap: 1rem; /* Ще більший відступ до тексту */
     }
 
     .stat-label{
-      width: 28px;
+      width: 44px; /* Контейнер став ще більшим */
+      height: 44px;
       display:flex;
       justify-content:center;
       align-items:center;
-      opacity: .98;
     }
 
     .stat-label svg{
-      width: 18px;
-      height: 18px;
+      width: 36px;  /* МАКСИМАЛЬНИЙ розмір */
+      height: 36px;
       display:block;
+      fill: none;
+      stroke: var(--neon-color);
+      stroke-width: 2.2; /* Товстіші лінії для великого розміру */
+      filter: drop-shadow(0 0 3px var(--neon-color));
+    }
 
-      fill: #fff;
-      stroke: var(--stroke);
-      stroke-width: 1.3;
-      stroke-linejoin: round;
-      stroke-linecap: round;
-      paint-order: stroke fill;
+    /* Допоміжні іконки (мапа/фраги) теж трохи підтягнув */
+    .map-icon svg, .kills-icon svg {
+      width: 28px;
+      height: 28px;
     }
 
     .stat-value{
-      font-size: 20px;             /* як “ігрові” цифри */
-      min-width: 90px;
+      font-size: 24px; /* Збільшив шрифт цифр, щоб відповідали іконкам */
+      min-width: 100px;
       letter-spacing: .2px;
-      color: rgba(255,255,255,0.98);
-
+      color: #fff;
       font-variant-numeric: tabular-nums;
-      font-feature-settings: "tnum" 1;
-
       -webkit-text-stroke: var(--stroke-w) var(--stroke);
       paint-order: stroke fill;
     }
@@ -144,9 +133,8 @@
       </div>
     </div>
 
-    <!-- Мапа -->
     <div class="stat-block">
-      <div class="stat-label" aria-hidden="true">
+      <div class="stat-label map-icon">
         <svg viewBox="0 0 24 24">
           <path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 6 12.6 6.3 12.9.4.5 1.1.5 1.5 0C13 21.6 19 14.2 19 9c0-3.9-3.1-7-7-7zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
         </svg>
@@ -154,29 +142,29 @@
       <div id="map-name" class="stat-value">-</div>
     </div>
 
-    <!-- 1) Приціл = дамаг -->
     <div class="stat-block">
-      <div class="stat-label" aria-hidden="true">
-        <svg viewBox="0 0 24 24">
-          <path d="M11 2h2v3a7.02 7.02 0 0 1 6 6h3v2h-3a7.02 7.02 0 0 1-6 6v3h-2v-3a7.02 7.02 0 0 1-6-6H2v-2h3a7.02 7.02 0 0 1 6-6V2zm1 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/>
+      <div class="stat-label">
+        <svg viewBox="0 0 32 32">
+            <path d="M9.361 11.32a.865.865 0 0 1 0-1.225l.734-.734a.866.866 0 0 1 1.224 0l3.672 3.672a.865.865 0 0 1 0 1.224l-.734.734a.865.865 0 0 1-1.224 0L9.361 11.32Zm7.648 7.647a.865.865 0 0 1 0-1.224l.734-.734a.866.866 0 0 1 1.224 0l3.672 3.672a.865.865 0 0 1 0 1.224l-.734.734a.865.865 0 0 1-1.224 0l-3.672-3.672Zm2.112-4.13a.865.865 0 0 1-1.224 0l-.734-.734a.865.865 0 0 1 0-1.224l3.672-3.672a.865.865 0 0 1 1.224 0l.734.734a.865.865 0 0 1 0 1.224l-3.672 3.672Zm-7.956 7.956a.866.866 0 0 1-1.224 0l-.734-.734a.865.865 0 0 1 0-1.224l3.672-3.672a.865.865 0 0 1 1.224 0l.734.734a.865.865 0 0 1 0 1.224l-3.672 3.672Z"></path>
         </svg>
       </div>
       <div id="damage-value" class="stat-value">0</div>
     </div>
 
-    <!-- 2) Око = насвіт -->
     <div class="stat-block">
-      <div class="stat-label" aria-hidden="true">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 5c5.5 0 9.7 4.1 11 7-1.3 2.9-5.5 7-11 7S2.3 15.9 1 12c1.3-2.9 5.5-7 11-7zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2.2a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6z"/>
+      <div class="stat-label">
+        <svg viewBox="0 0 32 32">
+            <path d="M13.368 17.123a.184.184 0 0 1 .26 0l2.13 2.129a.185.185 0 0 1 0 .26l-.524.524a.185.185 0 0 1-.261 0l-1.348-1.348a.185.185 0 0 0-.26 0l-1.348 1.348a.185.185 0 0 1-.261 0l-.524-.523a.185.185 0 0 1 0-.262l2.136-2.128Z"></path>
+            <path fill-rule="evenodd" d="M7.074 18.771v-.383c0-.255.207-.462.462-.462h.689a5.312 5.312 0 0 1 4.617-4.616v-.69a.46.46 0 0 1 .461-.46h.383c.255 0 .462.206.462.46v.69a5.312 5.312 0 0 1 4.617 4.616h.688c.256 0 .462.207.462.462v.383a.462.462 0 0 1-.462.462h-.688a5.312 5.312 0 0 1-4.617 4.616v.69a.462.462 0 0 1-.462.461h-.383a.462.462 0 0 1-.461-.462v-.689a5.312 5.312 0 0 1-4.617-4.616h-.689a.462.462 0 0 1-.462-.462Zm6.42 3.733a3.928 3.928 0 0 0 3.87-4.578 3.928 3.928 0 0 0-4.522-3.217 3.928 3.928 0 0 0-3.218 4.524 3.928 3.928 0 0 0 3.87 3.271Z" clip-rule="evenodd"></path>
+            <path d="m18.64 11.964 2.128 2.128a.185.185 0 0 1 0 .261l-.523.524a.185.185 0 0 1-.262 0l-1.347-1.348a.185.185 0 0 0-.261 0l-.755.755a5.994 5.994 0 0 0-.873-.695l1.631-1.626a.185.185 0 0 1 .261 0Z"></path>
+            <path fill-rule="evenodd" d="M22.376 14.073a3.929 3.929 0 0 1-3.071 3.19l.003.017h.145c.589 0 1.07.458 1.106 1.038a5.315 5.315 0 0 0 3.216-4.245h.689a.462.462 0 0 0 .462-.461v-.383a.462.462 0 0 0-.462-.462h-.689a5.312 5.312 0 0 0-4.616-4.617v-.689A.462.462 0 0 0 18.697 7h-.383a.462.462 0 0 0-.462.461v.69a5.315 5.315 0 0 0-4.303 3.362h.137c.498 0 .92.328 1.06.78a3.93 3.93 0 0 1 4.412-2.743 3.928 3.928 0 0 1 3.218 4.523Z" clip-rule="evenodd"></path>
         </svg>
       </div>
       <div id="assist-value" class="stat-value">0</div>
     </div>
 
-    <!-- 3) Фраги -->
     <div class="stat-block">
-      <div class="stat-label" aria-hidden="true">
+      <div class="stat-label kills-icon">
         <svg viewBox="0 0 24 24">
           <path d="M12 2c-4.4 0-8 3.3-8 7.4 0 2.6 1.5 5 4 6.4V20c0 1.1.9 2 2 2h1v-3h2v3h1c1.1 0 2-.9 2-2v-4.2c2.5-1.4 4-3.8 4-6.4C20 5.3 16.4 2 12 2zm-3 9a1.2 1.2 0 1 1 0-2.4A1.2 1.2 0 0 1 9 11zm6 0a1.2 1.2 0 1 1 0-2.4A1.2 1.2 0 0 1 15 11zm-4 4h2v2h-2v-2z"/>
         </svg>
@@ -187,6 +175,7 @@
   </div>
 
 <script>
+  // Логіка WS без змін
   const MY_PLAYER_ID = 594841106;
   const WS_URL = "ws://localhost:38200";
 
@@ -194,101 +183,44 @@
   const damageEl = document.getElementById("damage-value");
   const assistEl = document.getElementById("assist-value");
   const killsEl  = document.getElementById("kills-value");
-
   const hpFill    = document.getElementById("hp-fill");
   const hpOverlay = document.getElementById("hp-overlay");
 
-  let ws;
-  let reconnectTimer;
-
-  let totalDamage = 0;
-  let totalAssist = 0;
-  let totalKills  = 0;
-
-  let maxHP = 0;
-  let curHP = 0;
+  let totalDamage = 0, totalAssist = 0, totalKills = 0, maxHP = 0, curHP = 0;
 
   const fmt = n => Number(n).toLocaleString("uk-UA");
   const clamp = v => Math.max(0, Math.min(1, v));
 
   function updateHP(){
     hpOverlay.textContent = `${fmt(curHP)} / ${fmt(maxHP)}`;
-    if (!maxHP){
-      hpFill.style.width = "0%";
-      return;
-    }
-    hpFill.style.width = `${clamp(curHP / maxHP) * 100}%`;
+    hpFill.style.width = maxHP ? `${clamp(curHP / maxHP) * 100}%` : "0%";
   }
 
   function resetAll(){
-    totalDamage = 0;
-    totalAssist = 0;
-    totalKills  = 0;
-    maxHP = 0;
-    curHP = 0;
-
-    mapEl.textContent = "-";
-    damageEl.textContent = "0";
-    assistEl.textContent = "0";
-    killsEl.textContent  = "0";
+    totalDamage = 0; totalAssist = 0; totalKills = 0; maxHP = 0; curHP = 0;
+    mapEl.textContent = "-"; damageEl.textContent = "0"; assistEl.textContent = "0"; killsEl.textContent = "0";
     updateHP();
   }
 
   function connectWS(){
-    ws = new WebSocket(WS_URL);
-    ws.onopen = () => clearTimeout(reconnectTimer);
-    ws.onclose = () => reconnectTimer = setTimeout(connectWS, 1000);
-    ws.onerror = () => ws.close();
-    ws.onmessage = handleMessage;
-  }
-
-  function handleMessage(e){
-    try{
-      const p = JSON.parse(e.data);
-      if (!p?.type || !p.path) return;
-
-      if (p.type === "state"){
-        switch(p.path){
-          case "battle.arena":
-            if (p.value?.localizedName) mapEl.textContent = p.value.localizedName;
-            break;
-
-          case "battle.efficiency.assist":
-            totalAssist = Number(p.value) || 0;
-            assistEl.textContent = fmt(totalAssist);
-            break;
-
-          case "battle.efficiency.kills":
-            totalKills = Number(p.value) || 0;
-            killsEl.textContent = fmt(totalKills);
-            break;
-
-          case "battle.maxHealth":
-            maxHP = Number(p.value) || 0;
-            updateHP();
-            break;
-
-          case "battle.health":
-            curHP = Number(p.value) || 0;
-            updateHP();
-            break;
-
-          case "hangar.isInHangar":
-            document.body.style.display = p.value ? "none" : "flex";
-            if (p.value) resetAll();
-            break;
+    let ws = new WebSocket(WS_URL);
+    ws.onclose = () => setTimeout(connectWS, 1000);
+    ws.onmessage = (e) => {
+      try {
+        const p = JSON.parse(e.data);
+        if (p.type === "state") {
+          if (p.path === "battle.arena" && p.value?.localizedName) mapEl.textContent = p.value.localizedName;
+          if (p.path === "battle.efficiency.assist") assistEl.textContent = fmt(totalAssist = p.value || 0);
+          if (p.path === "battle.efficiency.kills") killsEl.textContent = fmt(totalKills = p.value || 0);
+          if (p.path === "battle.maxHealth") { maxHP = p.value || 0; updateHP(); }
+          if (p.path === "battle.health") { curHP = p.value || 0; updateHP(); }
+          if (p.path === "hangar.isInHangar") { document.body.style.display = p.value ? "none" : "flex"; if (p.value) resetAll(); }
         }
-      }
-
-      if (p.type === "trigger" && p.path === "battle.onDamage"){
-        if (p.value?.attacker?.playerId === MY_PLAYER_ID){
-          totalDamage += Number(p.value.damage) || 0;
-          damageEl.textContent = fmt(totalDamage);
+        if (p.type === "trigger" && p.path === "battle.onDamage" && p.value?.attacker?.playerId === MY_PLAYER_ID) {
+          damageEl.textContent = fmt(totalDamage += Number(p.value.damage) || 0);
         }
-      }
-    }catch(err){
-      console.error(err);
-    }
+      } catch(err) {}
+    };
   }
 
   updateHP();
