@@ -40,13 +40,13 @@
       display:flex;
       flex-direction:column;
       align-items:flex-start;
-      gap:.38rem; /* зменшено */
+      gap: 0.15rem; /* ЗНАЧНО ЗМЕНШЕНО ВІДСТУП */
       font-weight: 700;
     }
 
     .hp-section{
       width: 100%;
-      margin-bottom: .05rem;
+      margin-bottom: 0.1rem; /* Мінімальний відступ після смужки HP */
     }
 
     .hp-bar{
@@ -92,6 +92,7 @@
       display:flex;
       align-items:center;
       gap:.6rem;
+      height: 32px; /* Фіксована висота рядка для щільності */
     }
 
     .stat-label{
@@ -115,7 +116,6 @@
         drop-shadow(0 0 10px rgba(54,255,80,0.25));
     }
 
-    /* карта більша */
     .map-icon svg{
       width: 23px;
       height: 23px;
@@ -153,7 +153,6 @@
       </div>
     </div>
 
-    <!-- Мапа -->
     <div class="stat-block">
       <div class="stat-label map-icon">
         <svg viewBox="0 0 24 24">
@@ -163,7 +162,6 @@
       <div id="map-name" class="stat-value">-</div>
     </div>
 
-    <!-- Дамаг -->
     <div class="stat-block">
       <div class="stat-label damage-icon">
         <svg viewBox="0 0 32 32">
@@ -173,7 +171,6 @@
       <div id="damage-value" class="stat-value">0</div>
     </div>
 
-    <!-- Асист -->
     <div class="stat-block">
       <div class="stat-label assist-icon">
         <svg viewBox="0 0 32 32">
@@ -186,7 +183,6 @@
       <div id="assist-value" class="stat-value">0</div>
     </div>
 
-    <!-- Фраги -->
     <div class="stat-block">
       <div class="stat-label kills-icon">
         <svg viewBox="0 0 32 32">
@@ -199,6 +195,7 @@
   </div>
 
 <script>
+  // Логіка без змін, як і просили
   const MY_PLAYER_ID = 594841106;
   const WS_URL = "ws://localhost:38200";
 
@@ -212,11 +209,9 @@
 
   let ws;
   let reconnectTimer;
-
   let totalDamage = 0;
   let totalAssist = 0;
   let totalKills  = 0;
-
   let maxHP = 0;
   let curHP = 0;
 
@@ -233,12 +228,7 @@
   }
 
   function resetAll(){
-    totalDamage = 0;
-    totalAssist = 0;
-    totalKills  = 0;
-    maxHP = 0;
-    curHP = 0;
-
+    totalDamage = 0; totalAssist = 0; totalKills = 0; maxHP = 0; curHP = 0;
     mapEl.textContent = "-";
     damageEl.textContent = "0";
     assistEl.textContent = "0";
@@ -264,27 +254,22 @@
           case "battle.arena":
             if (p.value?.localizedName) mapEl.textContent = p.value.localizedName;
             break;
-
           case "battle.efficiency.assist":
             totalAssist = Number(p.value) || 0;
             assistEl.textContent = fmt(totalAssist);
             break;
-
           case "battle.efficiency.kills":
             totalKills = Number(p.value) || 0;
             killsEl.textContent = fmt(totalKills);
             break;
-
           case "battle.maxHealth":
             maxHP = Number(p.value) || 0;
             updateHP();
             break;
-
           case "battle.health":
             curHP = Number(p.value) || 0;
             updateHP();
             break;
-
           case "hangar.isInHangar":
             document.body.style.display = p.value ? "none" : "flex";
             if (p.value) resetAll();
