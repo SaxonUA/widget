@@ -105,7 +105,6 @@
       overflow: visible;
     }
 
-    /* 🔥 АКУРАТНИЙ НЕОН ЯК В WoT */
     .stat-label svg{
       width: 18px;
       height: 18px;
@@ -117,7 +116,6 @@
         drop-shadow(0 0 10px rgba(54,255,80,0.25));
     }
 
-    /* ⬆️ збільшені іконки */
     .damage-icon svg,
     .assist-icon svg{
       width: 34px;
@@ -182,20 +180,106 @@
       <div id="assist-value" class="stat-value">0</div>
     </div>
 
-    <!-- Фраги -->
-    <div class="stat-block">
-      <div class="stat-label">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 2c-4.4 0-8 3.3-8 7.4 0 2.6 1.5 5 4 6.4V20c0 1.1.9 2 2 2h1v-3h2v3h1c1.1 0 2-.9 2-2v-4.2c2.5-1.4 4-3.8 4-6.4C20 5.3 16.4 2 12 2z"/>
-        </svg>
-      </div>
-      <div id="kills-value" class="stat-value">0</div>
-    </div>
-
   </div>
 
 <script>
-/* твій JS без змін */
+  const MY_PLAYER_ID = 594841106;
+  const WS_URL = "ws://localhost:38200";
+
+  const mapEl    = document.getElementById("map-name");
+  const damageEl = document.getElementById("damage-value");
+  const assistEl = document.getElementById("assist-value");
+
+  const hpFill    = document.getElementById("hp-fill");
+  const hpOverlay = document.getElementById("hp-overlay");
+
+  let ws;
+  let reconnectTimer;
+
+  let totalDamage = 0;
+  let totalAssist = 0;
+
+  let maxHP = 0;
+  let curHP = 0;
+
+  const fmt = n => Number(n).toLocaleString("uk-UA");
+  const clamp = v => Math.max(0, Math.min(1, v));
+
+  function updateHP(){
+    hpOverlay.textContent = `${fmt(curHP)} / ${fmt(maxHP)}`;
+    if (!maxHP){
+      hpFill.style.width = "0%";
+      return;
+    }
+    hpFill.style.width = `${clamp(curHP / maxHP) * 100}%`;
+  }
+
+  function resetAll(){
+    totalDamage = 0;
+    totalAssist = 0;
+    maxHP = 0;
+    curHP = 0;
+
+    mapEl.textContent = "-";
+    damageEl.textContent = "0";
+    assistEl.textContent = "0";
+    updateHP();
+  }
+
+  function connectWS(){
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => clearTimeout(reconnectTimer);
+    ws.onclose = () => reconnectTimer = setTimeout(connectWS, 1000);
+    ws.onerror = () => ws.close();
+    ws.onmessage = handleMessage;
+  }
+
+  function handleMessage(e){
+    try{
+      const p = JSON.parse(e.data);
+      if (!p?.type || !p.path) return;
+
+      if (p.type === "state"){
+        switch(p.path){
+          case "battle.arena":
+            if (p.value?.localizedName) mapEl.textContent = p.value.localizedName;
+            break;
+
+          case "battle.efficiency.assist":
+            totalAssist = Number(p.value) || 0;
+            assistEl.textContent = fmt(totalAssist);
+            break;
+
+          case "battle.maxHealth":
+            maxHP = Number(p.value) || 0;
+            updateHP();
+            break;
+
+          case "battle.health":
+            curHP = Number(p.value) || 0;
+            updateHP();
+            break;
+
+          case "hangar.isInHangar":
+            document.body.style.display = p.value ? "none" : "flex";
+            if (p.value) resetAll();
+            break;
+        }
+      }
+
+      if (p.type === "trigger" && p.path === "battle.onDamage"){
+        if (p.value?.attacker?.playerId === MY_PLAYER_ID){
+          totalDamage += Number(p.value.damage) || 0;
+          damageEl.textContent = fmt(totalDamage);
+        }
+      }
+    }catch(err){
+      console.error(err);
+    }
+  }
+
+  updateHP();
+  connectWS();
 </script>
 </body>
 </html>
