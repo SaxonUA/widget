@@ -1,236 +1,977 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Віджет бою</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg-color: rgba(0,0,0,0.0);
+      --text-color:#ffffff;
+
+      --hp-bg: rgba(0,0,0,0.35);
+      --hp-border: rgba(255,255,255,0.18);
+      --hp-fill: #20c76a;
+
+      --widget-width: 360px;
+
+      --stroke: rgba(0,0,0,0.90);
+      --stroke-w: 1px;
+    }
+
+    body{
+      margin:0;
+      padding:10px;
+      height:100vh;
+      background:var(--bg-color);
+      color:var(--text-color);
+      display:flex;
+      justify-content:flex-start;
+      align-items:flex-start;
+      font-family: "Roboto Condensed", Arial, sans-serif;
+    }
+
+    .battle-widget{
+      width: var(--widget-width);
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap: 0.15rem;
+      font-weight: 700;
+    }
+
+    .hp-section{
+      width: 100%;
+      margin-bottom: 0.1rem;
+    }
+
+    .hp-bar{
+      width: 65%;
+      height: 18px;
+      position: relative;
+      background: var(--hp-bg);
+      border: 1px solid var(--hp-border);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.35);
+      margin: 0;
+    }
+
+    .hp-fill{
+      height: 100%;
+      width: 0%;
+      background: var(--hp-fill);
+      transition: width 200ms linear;
+    }
+
+    .hp-overlay{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 16px;
+      letter-spacing: .3px;
+      color: rgba(255,255,255,0.98);
+      user-select:none;
+      white-space:nowrap;
+
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+
+      -webkit-text-stroke: var(--stroke-w) var(--stroke);
+      paint-order: stroke fill;
+      pointer-events:none;
+    }
+
+    .stat-block{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      height: 32px;
+    }
+
+    .stat-label{
+      width: 48px;
+      flex: 0 0 48px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      overflow: visible;
+    }
+
+    .stat-label svg{
+      width: 18px;
+      height: 18px;
+      display:block;
+      fill: #ffffff;
+
+      filter:
+        drop-shadow(0 0 2px rgba(54,255,80,0.9))
+        drop-shadow(0 0 5px rgba(54,255,80,0.5))
+        drop-shadow(0 0 10px rgba(54,255,80,0.25));
+    }
+
+    .map-icon svg{
+      width: 23px;
+      height: 23px;
+    }
+
+    .damage-icon svg,
+    .assist-icon svg,
+    .kills-icon svg{
+      width: 44px;
+      height: 44px;
+    }
+
+    .stat-value{
+      font-size: 20px;
+      min-width: 90px;
+      letter-spacing: .2px;
+      color: rgba(255,255,255,0.98);
+
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+
+      -webkit-text-stroke: var(--stroke-w) var(--stroke);
+      paint-order: stroke fill;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="battle-widget">
+
+    <!-- HP -->
+    <div class="hp-section">
+      <div class="hp-bar">
+        <div id="hp-fill" class="hp-fill"></div>
+        <div id="hp-overlay" class="hp-overlay">0 / 0</div>
+      </div>
+    </div>
+
+
+    <!-- MAP -->
+    <div class="stat-block">
+
+      <div class="stat-label map-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 6 12.6 6.3 12.9.4.5 1.1.5 1.5 0C13 21.6 19 14.2 19 9c0-3.9-3.1-7-7-7zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+        </svg>
+      </div>
+
+      <div id="map-name" class="stat-value">-</div>
+
+    </div>
+
+
+    <!-- DAMAGE -->
+    <div class="stat-block">
+
+      <div class="stat-label damage-icon">
+
+        <svg viewBox="0 0 32 32">
+
+          <path d="
+            M9.361 11.32
+            a.865.865 0 0 1 0-1.225
+            l.734-.734
+            a.866.866 0 0 1 1.224 0
+            l3.672 3.672
+            a.865.865 0 0 1 0 1.224
+            l-.734.734
+            a.865.865 0 0 1-1.224 0
+            L9.361 11.32Z
+
+            m7.648 7.647
+            a.865.865 0 0 1 0-1.224
+            l.734-.734
+            a.866.866 0 0 1 1.224 0
+            l3.672 3.672
+            a.865.865 0 0 1 0 1.224
+            l-.734.734
+            a.865.865 0 0 1-1.224 0
+            l-3.672-3.672Z
+
+            m2.112-4.13
+            a.865.865 0 0 1-1.224 0
+            l-.734-.734
+            a.865.865 0 0 1 0-1.224
+            l3.672-3.672
+            a.865.865 0 0 1 1.224 0
+            l.734.734
+            a.865.865 0 0 1 0 1.224
+            l-3.672 3.672Z
+
+            m-7.956 7.956
+            a.866.866 0 0 1-1.224 0
+            l-.734-.734
+            a.865.865 0 0 1 0-1.224
+            l3.672-3.672
+            a.865.865 0 0 1 1.224 0
+            l.734.734
+            a.865.865 0 0 1 0 1.224
+            l-3.672 3.672Z
+          "/>
+
+        </svg>
+
+      </div>
+
+      <div id="damage-value" class="stat-value">0</div>
+
+    </div>
+
+
+    <!-- ASSIST -->
+    <div class="stat-block">
+
+      <div class="stat-label assist-icon">
+
+        <svg viewBox="0 0 32 32">
+
+          <path d="
+            M13.368 17.123
+            a.184.184 0 0 1 .26 0
+            l2.13 2.129
+            a.185.185 0 0 1 0 .26
+            l-.524.524
+            a.185.185 0 0 1-.261 0
+            l-1.348-1.348
+            a.185.185 0 0 0-.26 0
+            l-1.348 1.348
+            a.185.185 0 0 1-.261 0
+            l-.524-.523
+            a.185.185 0 0 1 0-.262
+            l2.136-2.128Z
+          "/>
+
+          <path
+            fill-rule="evenodd"
+            d="
+              M7.074 18.771v-.383
+              c0-.255.207-.462.462-.462h.689
+              a5.312 5.312 0 0 1 4.617-4.616v-.69
+              a.46.46 0 0 1 .461-.46h.383
+              c.255 0 .462.206.462.46v.69
+              a5.312 5.312 0 0 1 4.617 4.616h.688
+              c.256 0 .462.207.462.462v.383
+              a.462.462 0 0 1-.462.462h-.688
+              a5.312 5.312 0 0 1-4.617 4.616v.69
+              a.462.462 0 0 1-.462.461h-.383
+              a.462.462 0 0 1-.461-.462v-.689
+              a5.312 5.312 0 0 1-4.617-4.616h-.689
+              a.462.462 0 0 1-.462-.462Zm
+              6.42 3.733
+              a3.928 3.928 0 0 0 3.87-4.578
+              3.928 3.928 0 0 0-4.522-3.217
+              3.928 3.928 0 0 0-3.218 4.524
+              3.928 3.928 0 0 0 3.87 3.271Z
+            "
+            clip-rule="evenodd"
+          />
+
+          <path d="
+            m18.64 11.964
+            2.128 2.128
+            a.185.185 0 0 1 0 .261
+            l-.523.524
+            a.185.185 0 0 1-.262 0
+            l-1.347-1.348
+            a.185.185 0 0 0-.261 0
+            l-.755.755
+            a5.994 5.994 0 0 0-.873-.695
+            l1.631-1.626
+            a.185.185 0 0 1 .261 0Z
+          "/>
+
+          <path
+            fill-rule="evenodd"
+            d="
+              M22.376 14.073
+              a3.929 3.929 0 0 1-3.071 3.19
+              l.003.017h.145
+              c.589 0 1.07.458 1.106 1.038
+              a5.315 5.315 0 0 0 3.216-4.245h.689
+              a.462.462 0 0 0 .462-.461v-.383
+              a.462.462 0 0 0-.462-.462h-.689
+              a5.312 5.312 0 0 0-4.616-4.617v-.689
+              A.462.462 0 0 0 18.697 7h-.383
+              a.462.462 0 0 0-.462.461v.69
+              a5.315 5.315 0 0 0-4.303 3.362h.137
+              c.498 0 .92.328 1.06.78
+              a3.93 3.93 0 0 1 4.412-2.743
+              3.928 3.928 0 0 1 3.218 4.523Z
+            "
+            clip-rule="evenodd"
+          />
+
+        </svg>
+
+      </div>
+
+      <div id="assist-value" class="stat-value">0</div>
+
+    </div>
+
+
+    <!-- KILLS -->
+    <div class="stat-block">
+
+      <div class="stat-label kills-icon">
+
+        <svg viewBox="0 0 32 32">
+
+          <path
+            fill-rule="evenodd"
+            d="
+              M17.226 17.608
+              20.291 16h2.144
+              l2.144 1.072v1.072
+              l-2.59 3.036
+              -4.763-3.572Zm
+
+              -4.265-3.2
+              .183-.552H3.139v-1.072h10.363
+              l.357-1.072
+              2.144-1.072
+              4.288 1.072v2.144
+              l-4.288 2.834
+              -3.042-2.282ZM
+
+              12.636 16
+              l2.144 1.608
+              -4.544 3.408
+              -2.809-2.872v-1.072
+              L8.592 16h4.044Zm
+
+              7.148 5.36h-7.562
+              l3.781-2.834
+              3.78 2.834Z
+            "
+            clip-rule="evenodd"
+          />
+
+        </svg>
+
+      </div>
+
+      <div id="kills-value" class="stat-value">0</div>
+
+    </div>
+
+  </div>
+
+
 <script>
-  const MY_PLAYER_ID = 594760646;
+
+  // ============================================================
+  // WOTSTAT
+  // ============================================================
+
   const WS_URL = "ws://localhost:38200";
 
-  const mapEl    = document.getElementById("map-name");
-  const damageEl = document.getElementById("damage-value");
-  const assistEl = document.getElementById("assist-value");
-  const killsEl  = document.getElementById("kills-value");
 
-  const hpFill    = document.getElementById("hp-fill");
-  const hpOverlay = document.getElementById("hp-overlay");
+  // ============================================================
+  // ELEMENTS
+  // ============================================================
 
-  let ws;
-  let reconnectTimer;
+  const mapEl =
+    document.getElementById("map-name");
+
+  const damageEl =
+    document.getElementById("damage-value");
+
+  const assistEl =
+    document.getElementById("assist-value");
+
+  const killsEl =
+    document.getElementById("kills-value");
+
+  const hpFill =
+    document.getElementById("hp-fill");
+
+  const hpOverlay =
+    document.getElementById("hp-overlay");
+
+
+  // ============================================================
+  // VARIABLES
+  // ============================================================
+
+  let ws = null;
+
+  let reconnectTimer = null;
 
   let totalDamage = 0;
+
   let totalAssist = 0;
-  let totalKills  = 0;
+
+  let totalKills = 0;
 
   let maxHP = 0;
+
   let curHP = 0;
 
-  // Щоб один і той самий знищений танк випадково
-  // не зарахувався два рази
-  let destroyedTargets = new Set();
+  let currentArenaId = null;
 
-  const fmt = n => Number(n).toLocaleString("uk-UA");
-  const clamp = v => Math.max(0, Math.min(1, v));
+
+  // ============================================================
+  // FORMAT
+  // ============================================================
+
+  const fmt = n =>
+    Number(n || 0).toLocaleString("uk-UA");
+
+  const clamp = v =>
+    Math.max(0, Math.min(1, v));
+
+
+  // ============================================================
+  // HP
+  // ============================================================
 
   function updateHP(){
-    hpOverlay.textContent = `${fmt(curHP)} / ${fmt(maxHP)}`;
+
+    hpOverlay.textContent =
+      `${fmt(curHP)} / ${fmt(maxHP)}`;
 
     if (!maxHP){
+
       hpFill.style.width = "0%";
+
       return;
     }
 
-    hpFill.style.width = `${clamp(curHP / maxHP) * 100}%`;
+    const percent =
+      clamp(curHP / maxHP) * 100;
+
+    hpFill.style.width =
+      `${percent}%`;
   }
 
+
+  // ============================================================
+  // KILLS STORAGE
+  // ============================================================
+
+  function getKillsStorageKey(){
+
+    if (!currentArenaId){
+      return null;
+    }
+
+    return `wot_battle_kills_${currentArenaId}`;
+  }
+
+
+  function saveKills(){
+
+    const key =
+      getKillsStorageKey();
+
+    if (!key){
+      return;
+    }
+
+    try{
+
+      localStorage.setItem(
+        key,
+        String(totalKills)
+      );
+
+    }catch(e){}
+  }
+
+
+  function loadKills(){
+
+    const key =
+      getKillsStorageKey();
+
+    if (!key){
+      return;
+    }
+
+    try{
+
+      const saved =
+        localStorage.getItem(key);
+
+      if (saved !== null){
+
+        totalKills =
+          Number(saved) || 0;
+
+        killsEl.textContent =
+          fmt(totalKills);
+      }
+
+    }catch(e){}
+  }
+
+
+  // ============================================================
+  // RESET
+  // ============================================================
+
   function resetAll(){
+
     totalDamage = 0;
+
     totalAssist = 0;
+
     totalKills = 0;
 
     maxHP = 0;
+
     curHP = 0;
 
-    destroyedTargets.clear();
+    currentArenaId = null;
 
     mapEl.textContent = "-";
+
     damageEl.textContent = "0";
+
     assistEl.textContent = "0";
+
     killsEl.textContent = "0";
 
     updateHP();
   }
 
-  function connectWS(){
-    ws = new WebSocket(WS_URL);
 
-    ws.onopen = () => {
-      clearTimeout(reconnectTimer);
-      console.log("WotStat WebSocket connected");
-    };
-
-    ws.onclose = () => {
-      reconnectTimer = setTimeout(connectWS, 1000);
-    };
-
-    ws.onerror = () => {
-      ws.close();
-    };
-
-    ws.onmessage = handleMessage;
-  }
+  // ============================================================
+  // STATE
+  // ============================================================
 
   function handleState(path, value){
 
     switch(path){
 
-      case "battle.arena":
-        if (value?.localizedName){
-          mapEl.textContent = value.localizedName;
+
+      // ========================================================
+      // ARENA ID
+      // ========================================================
+
+      case "battle.arenaId":
+
+        const newArenaId =
+          value !== undefined &&
+          value !== null
+            ? String(value)
+            : null;
+
+        if (
+          newArenaId &&
+          newArenaId !== currentArenaId
+        ){
+
+          currentArenaId =
+            newArenaId;
+
+          totalKills = 0;
+
+          killsEl.textContent = "0";
+
+          loadKills();
         }
+
         break;
 
+
+      // ========================================================
+      // MAP
+      // ========================================================
+
+      case "battle.arena":
+
+        if (value?.localizedName){
+
+          mapEl.textContent =
+            value.localizedName;
+        }
+
+        break;
+
+
+      // ========================================================
+      // DAMAGE
+      // ========================================================
+
+      case "battle.efficiency.damage":
+
+        totalDamage =
+          Number(value) || 0;
+
+        damageEl.textContent =
+          fmt(totalDamage);
+
+        break;
+
+
+      // ========================================================
+      // ASSIST
+      // ========================================================
 
       case "battle.efficiency.assist":
-        totalAssist = Number(value) || 0;
-        assistEl.textContent = fmt(totalAssist);
+
+        totalAssist =
+          Number(value) || 0;
+
+        assistEl.textContent =
+          fmt(totalAssist);
+
         break;
 
+
+      // ========================================================
+      // MAX HP
+      // ========================================================
 
       case "battle.maxHealth":
-        maxHP = Number(value) || 0;
+
+        maxHP =
+          Number(value) || 0;
+
         updateHP();
+
         break;
 
+
+      // ========================================================
+      // CURRENT HP
+      // ========================================================
 
       case "battle.health":
-        curHP = Number(value) || 0;
+
+        curHP =
+          Number(value) || 0;
+
         updateHP();
+
         break;
 
 
+      // ========================================================
+      // HANGAR
+      // ========================================================
+
       case "hangar.isInHangar":
-        document.body.style.display = value ? "none" : "flex";
+
+        document.body.style.display =
+          value
+            ? "none"
+            : "flex";
 
         if (value){
+
           resetAll();
         }
+
         break;
     }
   }
 
+
+  // ============================================================
+  // PLAYER FEEDBACK
+  // ============================================================
+
+  function handlePlayerFeedback(value){
+
+    console.log(
+      "[WOTSTAT] PlayerFeedback:",
+      value
+    );
+
+    if (!value){
+      return;
+    }
+
+
+    // ==========================================================
+    // KILL
+    // ==========================================================
+
+    if (value.type === "kill"){
+
+      totalKills++;
+
+      killsEl.textContent =
+        fmt(totalKills);
+
+      saveKills();
+
+      console.log(
+        "[WOTSTAT] KILL +1",
+        "TOTAL:",
+        totalKills,
+        "TARGET:",
+        value?.data?.vehicle?.playerName ||
+        value?.data?.vehicle?.localizedName ||
+        value?.data?.vehicle?.tag ||
+        "unknown"
+      );
+    }
+  }
+
+
+  // ============================================================
+  // TRIGGER
+  // ============================================================
 
   function handleTrigger(path, value){
 
-    if (path !== "battle.onDamage") return;
-
-    const attacker = value?.attacker;
-    const target   = value?.target;
-
-    if (!attacker) return;
-
-    // Нас цікавить тільки шкода, нанесена саме нами
-    if (Number(attacker.playerId) !== MY_PLAYER_ID) return;
+    console.log(
+      "[WOTSTAT] TRIGGER:",
+      path,
+      value
+    );
 
 
-    // ==========================
-    // УРОН
-    // ==========================
+    // ==========================================================
+    // PLAYER FEEDBACK
+    // ==========================================================
 
-    const damage = Number(value?.damage) || 0;
+    if (
+      path ===
+      "battle.onPlayerFeedback"
+    ){
 
-    if (damage > 0){
-      totalDamage += damage;
-      damageEl.textContent = fmt(totalDamage);
-    }
+      handlePlayerFeedback(value);
 
-
-    // ==========================
-    // ФРАГ
-    // ==========================
-
-    const targetHealth = Number(value?.health);
-
-    if (target && targetHealth <= 0){
-
-      // Унікальний ID цілі
-      const targetKey =
-        `${target.playerId ?? "0"}_${target.playerName ?? ""}_${target.tag ?? ""}`;
-
-      // Не дозволяємо зарахувати одну ціль двічі
-      if (!destroyedTargets.has(targetKey)){
-
-        destroyedTargets.add(targetKey);
-
-        totalKills++;
-
-        killsEl.textContent = fmt(totalKills);
-
-        console.log(
-          "FRAG:",
-          target.playerName,
-          target.tag,
-          "kills:",
-          totalKills
-        );
-      }
+      return;
     }
   }
 
 
-  function handleMessage(e){
+  // ============================================================
+  // MESSAGE
+  // ============================================================
+
+  function handleMessage(event){
 
     try{
 
-      const p = JSON.parse(e.data);
+      const packet =
+        JSON.parse(event.data);
 
-      if (!p?.type) return;
 
-
-      // ==========================
+      // ========================================================
       // INIT
-      // ==========================
-      // WotStat після підключення віддає
-      // початкові значення всіх state.
-      // У старому коді ти це взагалі ігнорував.
+      // ========================================================
 
-      if (p.type === "init" && Array.isArray(p.states)){
+      if (
+        packet.type === "init" &&
+        Array.isArray(packet.states)
+      ){
 
-        for (const state of p.states){
-          handleState(state.path, state.value);
+        console.log(
+          "[WOTSTAT] INIT",
+          packet.states
+        );
+
+
+        /*
+          Спочатку arenaId,
+          щоб правильно відновити фраги
+          після перезавантаження OBS.
+        */
+
+        const arenaState =
+          packet.states.find(
+            state =>
+              state.path ===
+              "battle.arenaId"
+          );
+
+        if (arenaState){
+
+          handleState(
+            arenaState.path,
+            arenaState.value
+          );
+        }
+
+
+        /*
+          Потім усі інші значення
+        */
+
+        for (
+          const state
+          of packet.states
+        ){
+
+          if (
+            state.path ===
+            "battle.arenaId"
+          ){
+            continue;
+          }
+
+          handleState(
+            state.path,
+            state.value
+          );
         }
 
         return;
       }
 
 
-      // ==========================
+      // ========================================================
       // STATE
-      // ==========================
+      // ========================================================
 
-      if (p.type === "state"){
+      if (
+        packet.type === "state"
+      ){
 
-        handleState(p.path, p.value);
+        handleState(
+          packet.path,
+          packet.value
+        );
 
         return;
       }
 
 
-      // ==========================
+      // ========================================================
       // TRIGGER
-      // ==========================
+      // ========================================================
 
-      if (p.type === "trigger"){
+      if (
+        packet.type === "trigger"
+      ){
 
-        handleTrigger(p.path, p.value);
+        handleTrigger(
+          packet.path,
+          packet.value
+        );
 
         return;
       }
 
 
-    }catch(err){
+    }catch(error){
 
-      console.error("WotStat error:", err);
-
+      console.error(
+        "[WOTSTAT] ERROR:",
+        error,
+        event.data
+      );
     }
   }
 
 
+  // ============================================================
+  // WEBSOCKET
+  // ============================================================
+
+  function connectWS(){
+
+    if (
+      ws &&
+      (
+        ws.readyState ===
+        WebSocket.OPEN ||
+
+        ws.readyState ===
+        WebSocket.CONNECTING
+      )
+    ){
+      return;
+    }
+
+
+    console.log(
+      "[WOTSTAT] Connecting..."
+    );
+
+
+    ws =
+      new WebSocket(
+        WS_URL
+      );
+
+
+    // ==========================================================
+    // OPEN
+    // ==========================================================
+
+    ws.onopen = () => {
+
+      console.log(
+        "[WOTSTAT] Connected"
+      );
+
+      clearTimeout(
+        reconnectTimer
+      );
+    };
+
+
+    // ==========================================================
+    // MESSAGE
+    // ==========================================================
+
+    ws.onmessage =
+      handleMessage;
+
+
+    // ==========================================================
+    // ERROR
+    // ==========================================================
+
+    ws.onerror = error => {
+
+      console.error(
+        "[WOTSTAT] WebSocket error:",
+        error
+      );
+    };
+
+
+    // ==========================================================
+    // CLOSE
+    // ==========================================================
+
+    ws.onclose = () => {
+
+      console.log(
+        "[WOTSTAT] Disconnected"
+      );
+
+      clearTimeout(
+        reconnectTimer
+      );
+
+      reconnectTimer =
+        setTimeout(
+          connectWS,
+          1000
+        );
+    };
+  }
+
+
+  // ============================================================
+  // START
+  // ============================================================
+
   updateHP();
+
   connectWS();
+
 </script>
+
+</body>
+</html>
